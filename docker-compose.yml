@@ -1,0 +1,62 @@
+# =============================================================================
+# Hermes Agent — Engineering Drawing Review Platform
+# MEP (HVAC, Plumbing, Firefighting, Medical Gas) workflow scaffolding
+# =============================================================================
+
+services:
+  hermes:
+    image: nousresearch/hermes-agent:latest
+    container_name: hermes-mep-review
+    restart: unless-stopped
+    ports:
+      - "6789:6789"
+    environment:
+      # LLM provider keys — pick one or more
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      # Hermes profile & config
+      HERMES_PROFILE: ${HERMES_PROFILE:-default}
+      HERMES_HOME: /root/.hermes
+      # Workspace for MEP drawings and reviews
+      HERMES_WORKDIR: /workspace
+    volumes:
+      # Persistent Hermes state (skills, memory, cron, config)
+      - hermes_data:/root/.hermes
+      # Shared workspace: mount your local drawings/PDFs here
+      - ./workspace:/workspace
+      # Optional: mount custom skills
+      - ./skills:/root/.hermes/skills:ro
+    stdin_open: true
+    tty: true
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6789/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    # Uncomment for GPU inference (e.g. local LLM via Ollama)
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+
+  # Optional: lightweight file server for drawing uploads on spotty networks
+  # files:
+  #   image: halverneus/static-file-server:latest
+  #   container_name: mep-files
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8080:8080"
+  #   volumes:
+  #     - ./workspace:/web:ro
+  #   environment:
+  #     PORT: 8080
+  #     FOLDER: /web
+
+volumes:
+  hermes_data:
+    driver: local

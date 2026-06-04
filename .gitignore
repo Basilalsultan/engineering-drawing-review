@@ -1,0 +1,19 @@
+# Environment / secrets
+.env
+*.pem
+*.key
+
+# Workspace data (user drawings, large PDFs)
+/workspace/*
+!/workspace/.gitkeep
+
+# OS / editor
+.DS_Store
+*.swp
+*.swo
+.vscode/
+.idea/
+
+# Docker
+*.log
+docker-compose.override.yml
