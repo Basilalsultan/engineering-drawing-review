@@ -12,9 +12,6 @@ services:
       - "11434:11434"
     volumes:
       - ollama_data:/root/.ollama
-    environment:
-      # Optional: force CPU mode if no GPU
-      # OLLAMA_CPU_ONLY: "1"
     # Uncomment for NVIDIA GPU inference (needs nvidia-docker2)
     # deploy:
     #   resources:
@@ -64,18 +61,22 @@ services:
       retries: 3
       start_period: 10s
 
-  # Optional: lightweight file server for drawing uploads on spotty networks
-  # files:
-  #   image: halverneus/static-file-server:latest
-  #   container_name: mep-files
-  #   restart: unless-stopped
-  #   ports:
-  #     - "8080:8080"
-  #   volumes:
-  #     - ./workspace:/web:ro
-  #   environment:
-  #     PORT: 8080
-  #     FOLDER: /web
+  webhook:
+    build: ./webhook-bridge
+    container_name: mep-webhook
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      WORKSPACE: /workspace
+    volumes:
+      - ./workspace:/workspace
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
 
 volumes:
   hermes_data:

@@ -9,12 +9,13 @@ SERVICE := hermes
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
-	 awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}'
+	 awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2}'
 
-up: ## Start Hermes + Ollama (detached)
+up: ## Start Hermes + Ollama + Webhook (detached)
 	$(COMPOSE) up -d
 	@echo "✅ Hermes running on http://localhost:6789"
 	@echo "🧠 Ollama running on http://localhost:11434"
+	@echo "🔗 Webhook bridge on http://localhost:8000"
 	@echo "📁 Workspace mounted at ./workspace"
 
 down: ## Stop and remove containers
@@ -25,6 +26,9 @@ logs: ## Tail Hermes logs
 
 logs-ollama: ## Tail Ollama logs
 	$(COMPOSE) logs -f ollama
+
+logs-webhook: ## Tail webhook bridge logs
+	$(COMPOSE) logs -f webhook
 
 shell: ## Open a shell inside the Hermes container
 	$(COMPOSE) exec $(SERVICE) bash
